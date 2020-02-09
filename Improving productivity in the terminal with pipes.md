@@ -10,9 +10,9 @@ friction and make the experience more enjoyable. Even if the majority
 of your work is done outside of the terminal, you can still reap the benefits
 of utilizing command line tools to speed up common tasks. Without any shell
 scripting knowledge, you can get a lot of functionality out of combining
-commands with preexisting tools on on your system.
+commands with preexisting tools on your system.
 
-
+---
 ### Unix philosophy
 
 Unix tools are a very powerful set of low level programs that follow the [Unix philosophy][1],
@@ -43,6 +43,7 @@ you already use, with very little overhead.  Some more interesting common use
 cases for _pipes_ are using interfaces to make dynamic selections, executing
 conditionally, feeding data to commands that don't read from ___stdin___.
 
+---
 ### Leveraging pipes
 
 Navigating to a project's directory is a very common operation, and while tab
@@ -52,7 +53,7 @@ to select from.
 
 Let's assume all our projects are located at inside the *code* directory of our home folder.
 
-First we need need to generate a list of our directory paths.
+First we need to generate a list of our directory paths.
 
 **du** - summarizes disk usage of the set of FILEs, recursively for directories<br/>
 Without the `-a` flag it will only list directories. We make sure to exclude
@@ -68,7 +69,7 @@ with unwanted results, this also improves the speed of our command.<br/>
     4    /home/user/code/Project2/src
     ...
 
->For lengthier ignore patters you can provide a *.ignore* file with the `--exclude-from="path/to/.ignore"` option.
+>For lengthier ignore patterns you can provide a *.ignore* file with the `--exclude-from="path/to/.ignore"` option.
 
 Since we only need the paths we need to format our data.
 
@@ -83,22 +84,23 @@ with the `-f2-` option it will print only the second field of each line, so just
     /home/user/code/Project2/src
     ...
 
-We could use that data as is but we can make them look cleaner by removing the _$HOME_ path.
+We could use that data as is but we can make it look cleaner by removing the _$HOME_ path.
 
 **sed** - stream editor for filtering and transforming text<br/>
-For any operations on strings this is quite handy, allowing you to perform even advanced *regex* with the `-E` flag
+For any operations on strings this is quite handy, allowing you to perform even
+advanced *regex* with the `-E` flag.
 
     du ~/code --exclude={".*","node_*",misc,public} | cut -f2- | sed "s|$HOME/||"
-
-Now that our data is ready we need a menu to select from.
-
-    du ~/code --exclude={".*","node_*"} | cut -f2- | sed "s|$HOME/||"| fzf +m
 
     code/Project1/
     code/Project1/src
     code/Project2/
     code/Project2/src
     ...
+
+Now that our data is ready we need a menu to select from.
+
+    du ~/code --exclude={".*","node_*"} | cut -f2- | sed "s|$HOME/||"| fzf +m
 
 **[fzf][fzf]** - a command-line fuzzy finder<br/>
 This will provide us the fuzzy list to select a directory from. Any selection we make will
@@ -110,9 +112,9 @@ the _$HOME_ path.
 
     du ~/code --exclude={".*","node_*",misc,public} | cut -f2- | sed "s|$HOME/||" | fzf +m | sed "s|^|$HOME/|"
 
-Unlike the previous commands `cd` cannot read from ___stdin___ (we'll get a bit in to why later) so we will
+Unlike the previous commands `cd` cannot read from ___stdin___ (we'll get a bit into why later) so we will
 use command substitution, replacing the _dir_ name with our pipe. Anything
-inside `"$(...)" `(or `` `...` ``) will get evaluated (executed) first, and `cd` will be run after.
+inside `"$(...)" `(or `` `...` ``) will get evaluated (executed) first, and `cd` will run after.
 
     cd "$(du ~/code --exclude={".*","node_*",misc,public} | cut -f2- | sed "s|$HOME/||" | fzf +m | sed "s|^|$HOME/|")"
 
@@ -159,7 +161,9 @@ will read from ___stdin___ and execute the command we give it with that input.
     testing
 
 
-Now we can supply our interface as before but. Instead of `fzf` we could use any equivalent tool of our choice, even a graphical one like **[dmenu][dmenu]** or **[rofi][rofi]**.
+Now we can supply our interface as before. Instead of `fzf` we could use any
+equivalent tool of our choice, even a graphical one like **[dmenu][dmenu]** or
+**[rofi][rofi]**.
 
     git branch > /dev/null && git branch | xargs -L 1 echo | fzf --reverse
 
@@ -170,15 +174,11 @@ remove it before calling `git checkout`.
     git branch > /dev/null && git branch | xargs -L 1 echo | fzf --reverse | sed "s/.* //"
 
 Finally we need to call `git checkout` on our selection, Using `xargs` once again.
+The `-r` option will prevent execution on empty input.
 
     git branch > /dev/null && git branch | xargs -L 1 echo | fzf --reverse | sed "s/.* //" | xargs -r git checkout
 
-The `-r` option will not execute the command on empty input.
-
-
-    `fbr() { git branch > /dev/null && git branch | xargs -L 1 echo | fzf --reverse | sed "s/.* //" | xargs -r git checkout }`
-
-
+---
 ### POSIX Shell syntax
 
 Instead of a function you may also put your pipe in a script file. When writing
@@ -189,12 +189,15 @@ If your script does depend on bash make sure to use the appropriate shebang
 (`#!/usr/bin/env bash`).  You can lint your scripts with [ shellcheck
 ][shellcheck] which also provides useful suggestions.
 
+---
 ### Which is faster?
 
-There are multiple ways that achieve the same result but some are more optimal than others.
-Usually commands take milliseconds to execute so it's hard to tell
-which iteration is faster. It can also be hard to determine how adding another command to your pipe affects performance. A quick way to check the speed of a command is by running it multiple times
-and measuring the total time to completion.
+There are multiple ways that achieve the same result but some are more optimal
+than others.  Usually commands take milliseconds to execute so it's hard to
+tell which iteration is faster. It can also be hard to determine how adding
+another command to your pipe affects performance. A quick way to check the
+speed of a command is by running it multiple times and measuring the total time
+to completion.
 
     > time (
     for x in $(seq 100 ); do
@@ -205,12 +208,13 @@ and measuring the total time to completion.
 
    > Redirecting output to `/dev/null` so we don't flood the terminal
 
+---
 ### More tools
 
 The above examples only scratch the surface of what possible. The demonstrated model,
 hopefully provides some ideas on how you can integrate your tools with other commands.
 There are plenty more common operations you may want for your workflow. Below I've compiled
-a short list of other useful programs you find interesting.
+a short list of programs you may find interesting.
 
 - `awk` for more complicated field selections and pattern scanning
 - `rsync` for remote and local file copying
@@ -234,7 +238,7 @@ a short list of other useful programs you find interesting.
 [dmenu]: https://tools.suckless.org/dmenu/
 [rofi]: https://github.com/davatorium/rofi
 [ripgrep]: https://github.com/BurntSushi/ripgrep
-[fd]: https://github.com/BurntSushi/ripgrep
+[fd]: https://github.com/sharkdp/fd
 [bat]: https://github.com/sharkdp/bat
 [shellcheck]: https://github.com/koalaman/shellcheck
 [curl]: https://curl.haxx.se/
