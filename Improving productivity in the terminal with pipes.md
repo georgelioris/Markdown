@@ -61,7 +61,7 @@ the *node_modules* and hidden folders (such as .git) to avoid flooding our list
 with unwanted results, this also improves the speed of our command.<br/>
 
 
-    > du ~/code --exclude={".*","node_*"}
+    $ du ~/code --exclude={".*","node_*"}
 
     5584 /home/user/code/Project1/
     12 /home/user/code/Project1/src
@@ -76,7 +76,7 @@ Since we only need the paths we need to format our data.
 **cut** - removes sections from each line of files<br/>
 with the `-f2-` option it will print only the second field of each line, so just the directory paths.
 
-    > du ~/code --exclude={".*","node_*"} | cut -f2-
+    $ du ~/code --exclude={".*","node_*"} | cut -f2-
 
     /home/user/code/Project1/
     /home/user/code/Project1/src
@@ -90,7 +90,7 @@ We could use that data as is but we can make it look cleaner by removing the _$H
 For any operations on strings this is quite handy, allowing you to perform even
 advanced *regex* with the `-E` flag.
 
-    du ~/code --exclude={".*","node_*",misc,public} | cut -f2- | sed "s|$HOME/||"
+    $ du ~/code --exclude={".*","node_*",misc,public} | cut -f2- | sed "s|$HOME/||"
 
     code/Project1/
     code/Project1/src
@@ -154,7 +154,7 @@ will read from ___stdin___ and execute the command we give it with that input.
 >subprocess and changes in a subprocess do not get propagated to the parent
 >process.
 
-    git branch > /dev/null && git branch | xargs -L 1 echo
+    $ git branch > /dev/null && git branch | xargs -L 1 echo
 
     * master
     feature
@@ -199,7 +199,7 @@ another command to your pipe affects performance. A quick way to check the
 speed of a command is by running it multiple times and measuring the total time
 to completion.
 
-    > time (
+    $ time (
     for x in $(seq 100 ); do
     command > /dev/null
     done )
