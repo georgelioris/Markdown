@@ -64,8 +64,7 @@ with unwanted results, this also improves the speed of our command.<br/>
 
 ```bash
 $ du ~/code --exclude={".*","node_*"}
-```
-```
+
 5584 /home/user/code/Project1/
 12 /home/user/code/Project1/src
 4980 /home/user/code/Project2/
@@ -82,8 +81,7 @@ with the `-f2-` option it will print only the second field of each line, so just
 
 ```bash
 $ du ~/code --exclude={".*","node_*"} | cut -f2-
-```
-```
+
 /home/user/code/Project1/
 /home/user/code/Project1/src
 /home/user/code/Project2/
@@ -99,8 +97,7 @@ advanced *regex* with the `-E` flag.
 
 ```bash
 $ du ~/code --exclude={".*","node_*",misc,public} | cut -f2- | sed "s|$HOME/||"
-```
-```
+
 code/Project1/
 code/Project1/src
 code/Project2/
@@ -171,8 +168,7 @@ will read from ___stdin___ and execute the command we give it with that input.
 
 ```bash
 $ git branch > /dev/null && git branch | xargs -L 1 echo
-```
-```
+
 * master
 feature
 testing
@@ -226,8 +222,7 @@ $ time (
 for x in $(seq 100 ); do
 command > /dev/null
 done )
-```
-```
+
 7.88s user 3.26s system 120% cpu 9.266 total
 ```
 
