@@ -31,7 +31,9 @@ Some of those tools are the familiar `cd`, `cat`, `grep`, `echo`, `mkdir` etc, b
 and since most cli tools follow the same logic we have plenty of options. If you are aware of the pipe
 operator, it's certain you have encountered the following
 
-    cat file | grep pattern
+```bash
+cat file | grep pattern
+```
 
 This is quite underwhelming and also suboptimal. Using `cat` here is redundant,
 since `grep` can take file/s as argument/s and while it's fine if it happens in
@@ -60,14 +62,16 @@ Without the `-a` flag it will only list directories. We make sure to exclude
 the *node_modules* and hidden folders (such as .git) to avoid flooding our list
 with unwanted results, this also improves the speed of our command.<br/>
 
-
-    $ du ~/code --exclude={".*","node_*"}
-
-    5584 /home/user/code/Project1/
-    12 /home/user/code/Project1/src
-    4980 /home/user/code/Project2/
-    4    /home/user/code/Project2/src
-    ...
+```bash
+$ du ~/code --exclude={".*","node_*"}
+```
+```
+5584 /home/user/code/Project1/
+12 /home/user/code/Project1/src
+4980 /home/user/code/Project2/
+4    /home/user/code/Project2/src
+...
+```
 
 >For lengthier ignore patterns you can provide a *.ignore* file with the `--exclude-from="path/to/.ignore"` option.
 
@@ -76,13 +80,16 @@ Since we only need the paths we need to format our data.
 **cut** - removes sections from each line of files<br/>
 with the `-f2-` option it will print only the second field of each line, so just the directory paths.
 
-    $ du ~/code --exclude={".*","node_*"} | cut -f2-
-
-    /home/user/code/Project1/
-    /home/user/code/Project1/src
-    /home/user/code/Project2/
-    /home/user/code/Project2/src
-    ...
+```bash
+$ du ~/code --exclude={".*","node_*"} | cut -f2-
+```
+```
+/home/user/code/Project1/
+/home/user/code/Project1/src
+/home/user/code/Project2/
+/home/user/code/Project2/src
+...
+```
 
 We could use that data as is but we can make it look cleaner by removing the _$HOME_ path.
 
@@ -90,18 +97,22 @@ We could use that data as is but we can make it look cleaner by removing the _$H
 For any operations on strings this is quite handy, allowing you to perform even
 advanced *regex* with the `-E` flag.
 
-    $ du ~/code --exclude={".*","node_*",misc,public} | cut -f2- | sed "s|$HOME/||"
-
-    code/Project1/
-    code/Project1/src
-    code/Project2/
-    code/Project2/src
-    ...
+```bash
+$ du ~/code --exclude={".*","node_*",misc,public} | cut -f2- | sed "s|$HOME/||"
+```
+```
+code/Project1/
+code/Project1/src
+code/Project2/
+code/Project2/src
+...
+```
 
 Now that our data is ready we need a menu to select from.
 
-    du ~/code --exclude={".*","node_*"} | cut -f2- | sed "s|$HOME/||"| fzf +m
-
+```bash
+du ~/code --exclude={".*","node_*"} | cut -f2- | sed "s|$HOME/||"| fzf +m
+```
 **[fzf][fzf]** - a command-line fuzzy finder<br/>
 This will provide us the fuzzy list to select a directory from. Any selection we make will
 get printed to ___stdout___, ready for our next command to read.
@@ -110,19 +121,22 @@ The `+m` option disables multiline selection.
 To change directory we need to give our selection to `cd`, but before we do that we need to prepend
 the _$HOME_ path.
 
-    du ~/code --exclude={".*","node_*",misc,public} | cut -f2- | sed "s|$HOME/||" | fzf +m | sed "s|^|$HOME/|"
-
+```bash
+du ~/code --exclude={".*","node_*",misc,public} | cut -f2- | sed "s|$HOME/||" | fzf +m | sed "s|^|$HOME/|"
+```
 Unlike the previous commands `cd` cannot read from ___stdin___ (we'll get a bit into why later) so we will
 use command substitution, replacing the _dir_ name with our pipe. Anything
 inside `"$(...)" `(or `` `...` ``) will get evaluated (executed) first, and `cd` will run after.
 
-    cd "$(du ~/code --exclude={".*","node_*",misc,public} | cut -f2- | sed "s|$HOME/||" | fzf +m | sed "s|^|$HOME/|")"
-
+```bash
+cd "$(du ~/code --exclude={".*","node_*",misc,public} | cut -f2- | sed "s|$HOME/||" | fzf +m | sed "s|^|$HOME/|")"
+```
 Since this is intended to be used frequently we can extract that logic to a
 function inside our shell's .rc file (.bashrc/.zshrc)
 
-    cf() { cd "$(du ~/code --exclude={".*","node_*",misc,public} | cut -f2- | sed "s|$HOME/||" | fzf +m | sed "s|^|$HOME/|")" ;}
-
+```bash
+cf() { cd "$(du ~/code --exclude={".*","node_*",misc,public} | cut -f2- | sed "s|$HOME/||" | fzf +m | sed "s|^|$HOME/|")" ;}
+```
 **cf** - is the name of the function and how we access it from the shell
 
 ![Function demonstration](./demo.gif "Function demonstration")
@@ -140,8 +154,9 @@ still gets printed since we only redirected ___stdout___ not ___stderr___.
 
 >To discard the error message as well, use `command > /dev/null 2>&1`
 
-    git branch > /dev/null && git branch
-
+```bash
+git branch > /dev/null && git branch
+```
 
 To make the output of git branch usable we need to treat individual non-empty
 lines as input arguments and print that to ___stdout___ for our next command to
@@ -154,30 +169,37 @@ will read from ___stdin___ and execute the command we give it with that input.
 >subprocess and changes in a subprocess do not get propagated to the parent
 >process.
 
-    $ git branch > /dev/null && git branch | xargs -L 1 echo
-
-    * master
-    feature
-    testing
-
+```bash
+$ git branch > /dev/null && git branch | xargs -L 1 echo
+```
+```
+* master
+feature
+testing
+```
 
 Now we can supply our interface as before. Instead of `fzf` we could use any
 equivalent tool of our choice, even a graphical one like **[dmenu][dmenu]** or
 **[rofi][rofi]**.
 
-    git branch > /dev/null && git branch | xargs -L 1 echo | fzf --reverse
+```bash
+git branch > /dev/null && git branch | xargs -L 1 echo | fzf --reverse
+```
 
 You may have noticed that the asterisk is visible in our interface. That's because
 it's a useful visual indicator when changing branches. To avoid any trouble, we will
 remove it before calling `git checkout`.
 
-    git branch > /dev/null && git branch | xargs -L 1 echo | fzf --reverse | sed "s/.* //"
+```bash
+git branch > /dev/null && git branch | xargs -L 1 echo | fzf --reverse | sed "s/.* //"
+```
 
 Finally we need to call `git checkout` on our selection, Using `xargs` once again.
 The `-r` option will prevent execution on empty input.
 
-    git branch > /dev/null && git branch | xargs -L 1 echo | fzf --reverse | sed "s/.* //" | xargs -r git checkout
-
+```bash
+git branch > /dev/null && git branch | xargs -L 1 echo | fzf --reverse | sed "s/.* //" | xargs -r git checkout
+```
 ---
 ### POSIX Shell syntax
 
@@ -199,12 +221,15 @@ another command to your pipe affects performance. A quick way to check the
 speed of a command is by running it multiple times and measuring the total time
 to completion.
 
-    $ time (
-    for x in $(seq 100 ); do
-    command > /dev/null
-    done )
-
-    7.88s user 3.26s system 120% cpu 9.266 total
+```bash
+$ time (
+for x in $(seq 100 ); do
+command > /dev/null
+done )
+```
+```
+7.88s user 3.26s system 120% cpu 9.266 total
+```
 
    > Redirecting output to `/dev/null` so we don't flood the terminal
 
